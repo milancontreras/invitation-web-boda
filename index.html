@@ -232,7 +232,12 @@ body.locked{overflow:hidden}
 .envelope{position:fixed;inset:0;z-index:30;background-color:var(--bg);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
   cursor:pointer;transition:opacity .7s,transform .7s;font-family:var(--f-body);border:0;width:100%;padding:24px}
 .envelope.gone{opacity:0;transform:translateY(-3%);pointer-events:none}
-.env-to{font-family:var(--f-script);font-size:calc(var(--script-size) * 1.1);color:var(--accent);text-align:center;max-width:300px;line-height:1.2;text-wrap:balance}
+.env-to{font-family:var(--f-script);font-size:calc(var(--script-size) * 1.1);color:var(--accent);text-align:center;max-width:300px;line-height:1.2;text-wrap:balance;min-height:2.4em;display:flex;align-items:center;justify-content:center}
+.env-to.loading::after{content:"";width:46px;height:8px;background:radial-gradient(circle,var(--accent) 3px,transparent 3.5px) 0 50%/15.3px 8px repeat-x;animation:espera 1.1s ease-in-out infinite}
+.env-to.in{animation:aparece .6s ease-out both}
+@keyframes espera{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes aparece{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.env-to.loading::after,.env-to.in{animation:none}}
 .env{position:relative;width:250px;height:165px;perspective:900px}
 .env-body{position:absolute;inset:0;background:var(--card);border:1.5px solid var(--ink);border-radius:3px}
 .env-letter{position:absolute;left:16px;right:16px;top:10px;height:128px;background:var(--bg);border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);
@@ -411,7 +416,7 @@ body.locked{overflow:hidden}
   </nav>
 
   <button class="envelope" id="envelope" type="button" aria-label="Abrir la invitación" hidden>
-    <span class="env-to" id="envTo">Para ti</span>
+    <span class="env-to" id="envTo" aria-live="polite">Para ti</span>
     <span class="env">
       <span class="env-body"></span>
       <span class="env-letter"><b data-bind="iniciales"></b></span>
@@ -669,25 +674,40 @@ const FOTOS = {
       const r=await api({action:'rsvp',i:codigo,asiste,personas:$("#personas").value||1,mensaje:$("#mensaje").value.trim()});
       if(!r.ok) throw new Error(r.error);
       invitado.respuesta=r.respuesta; invitado.personas=r.personas; invitado.mensaje=$("#mensaje").value.trim();
+      guardarCache(invitado);
       mostrarEstado();
     }catch(_){
       err.textContent="No pudimos enviar tu respuesta. Revisa tu conexión e inténtalo de nuevo."; err.hidden=false;
     }finally{ btn.disabled=false; btn.textContent="Enviar respuesta"; }
   });
 
+  /* Nombre en el sobre: espera a la hoja en lugar de mostrar "Para ti" y luego cambiar */
+  const envTo=$("#envTo");
+  function nombreSobre(texto){ envTo.classList.remove('loading'); envTo.textContent=texto; envTo.classList.remove('in'); void envTo.offsetWidth; envTo.classList.add('in'); }
+  function mostrarInvitado(r){
+    invitado=r;
+    if(envTo.textContent!=="Para "+r.invitacion) nombreSobre("Para "+r.invitacion);
+    bind({invitacion:r.invitacion,pases:r.pases});
+    $("#personal").hidden=false;
+    if(r.respuesta==='Asistirá'||r.respuesta==='No asistirá') mostrarEstado(); else mostrarForm();
+  }
+  const claveCache="invitado:"+codigo;
+  function leerCache(){ try{ return JSON.parse(sessionStorage.getItem(claveCache)||"null"); }catch(_){ return null; } }
+  function guardarCache(r){ try{ sessionStorage.setItem(claveCache,JSON.stringify(r)); }catch(_){} }
+
   (async function(){
     if(demo) document.body.insertAdjacentHTML('beforeend','<div class="demo">Modo de prueba: falta conectar la hoja (API_URL)</div>');
     if(!codigo && !demo){ sinInvitado("Para confirmar, abre el enlace personal que te enviamos."); return; }
+    const guardado=codigo?leerCache():null;
+    if(guardado) mostrarInvitado(guardado);
+    else { envTo.textContent=""; envTo.classList.add('loading'); }
     try{
       const r=await api({i:codigo});
-      if(!r.ok){ sinInvitado("No encontramos tu invitación. Revisa que el enlace esté completo o escríbenos."); return; }
-      invitado=r;
-      $("#envTo").textContent="Para "+r.invitacion;
-      bind({invitacion:r.invitacion,pases:r.pases});
-      $("#personal").hidden=false;
-      if(r.respuesta==='Asistirá'||r.respuesta==='No asistirá') mostrarEstado(); else mostrarForm();
+      if(!r.ok){ nombreSobre("Para ti"); sinInvitado("No encontramos tu invitación. Revisa que el enlace esté completo o escríbenos."); return; }
+      guardarCache(r);
+      mostrarInvitado(r);
     }catch(_){
-      sinInvitado("No pudimos cargar tu invitación. Intenta recargar la página.");
+      if(!guardado){ nombreSobre("Para ti"); sinInvitado("No pudimos cargar tu invitación. Intenta recargar la página."); }
     }
   })();
 })();
