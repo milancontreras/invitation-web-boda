@@ -252,6 +252,8 @@ body.locked{overflow:hidden}
 .seal{position:absolute;left:50%;top:84px;transform:translateX(-50%);width:50px;height:50px;border-radius:50%;background:var(--accent);color:var(--btn-text);z-index:5;
   display:grid;place-items:center;font-family:var(--f-script);font-size:17px;transition:opacity .3s}
 .env-cta{font-size:11px;letter-spacing:.24em;text-transform:uppercase;opacity:.75;animation:pulse 2.2s ease-in-out infinite}
+.envelope:disabled{cursor:progress}
+.envelope:disabled .env-cta{animation:none;opacity:.5}
 @keyframes pulse{50%{opacity:.35}}
 .opening .seal{opacity:0}
 .opening .env-flap{transform:rotateX(180deg);z-index:0}
@@ -424,7 +426,7 @@ body.locked{overflow:hidden}
       <span class="env-flap"><svg viewBox="0 0 250 112" preserveAspectRatio="none" aria-hidden="true"><path d="M1 1 L125 106 L249 1 Z"/></svg></span>
       <span class="seal" data-bind="sello"></span>
     </span>
-    <span class="env-cta">Toca para abrir</span>
+    <span class="env-cta" id="envCta">Toca para abrir</span>
   </button>
 </div>
 
@@ -600,6 +602,7 @@ const FOTOS = {
   const env=$("#envelope");
   if(CONFIG.sobreDeEntrada){ env.hidden=false; document.body.classList.add('locked'); }
   env.addEventListener('click',()=>{
+    if(env.disabled) return;
     env.classList.add('opening');
     setTimeout(()=>env.classList.add('gone'),1300);
     setTimeout(()=>{ env.hidden=true; document.body.classList.remove('locked'); replay($("#coverIll .ill")); const sv=$("#coverIll svg.mia"); if(sv) sv.replaceWith(sv.cloneNode(true)); $$(".corner .ill").forEach(replay); },1900);
@@ -683,7 +686,9 @@ const FOTOS = {
 
   /* Nombre en el sobre: espera a la hoja en lugar de mostrar "Para ti" y luego cambiar */
   const envTo=$("#envTo");
-  function nombreSobre(texto){ envTo.classList.remove('loading'); envTo.textContent=texto; envTo.classList.remove('in'); void envTo.offsetWidth; envTo.classList.add('in'); }
+  function sobreListo(){ env.disabled=false; env.removeAttribute('aria-busy'); $("#envCta").textContent="Toca para abrir"; }
+  function sobreEsperando(){ env.disabled=true; env.setAttribute('aria-busy','true'); $("#envCta").textContent="Preparando tu invitación…"; setTimeout(sobreListo,10000); }
+  function nombreSobre(texto){ sobreListo(); envTo.classList.remove('loading'); envTo.textContent=texto; envTo.classList.remove('in'); void envTo.offsetWidth; envTo.classList.add('in'); }
   function mostrarInvitado(r){
     invitado=r;
     if(envTo.textContent!=="Para "+r.invitacion) nombreSobre("Para "+r.invitacion);
@@ -700,7 +705,7 @@ const FOTOS = {
     if(!codigo && !demo){ sinInvitado("Para confirmar, abre el enlace personal que te enviamos."); return; }
     const guardado=codigo?leerCache():null;
     if(guardado) mostrarInvitado(guardado);
-    else { envTo.textContent=""; envTo.classList.add('loading'); }
+    else { envTo.textContent=""; envTo.classList.add('loading'); sobreEsperando(); }
     try{
       const r=await api({i:codigo});
       if(!r.ok){ nombreSobre("Para ti"); sinInvitado("No encontramos tu invitación. Revisa que el enlace esté completo o escríbenos."); return; }
