@@ -267,13 +267,8 @@ body.locked{overflow:hidden}
 .opening .seal{opacity:0}
 .opening .env-flap{transform:rotateX(180deg);z-index:0}
 .opening .env-letter{transform:translateY(-78px)}
-.song-card{background:var(--card);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:20px;padding:20px 18px 18px;display:grid;gap:14px}
-.song-head{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;align-items:center;text-align:left}
-.song-head .vinyl{width:64px;height:64px}
-.song-title{font-family:var(--f-display);font-style:var(--display-style);font-size:22px;line-height:1.1;text-transform:var(--display-transform)}
-.song-artist{font-size:12px;letter-spacing:.16em;text-transform:uppercase;opacity:.75;margin-top:4px !important}
-.song-note{font-size:12.5px;opacity:.8;margin-top:3px !important;font-style:italic}
-.song-card iframe{width:100%;height:166px;border:0;border-radius:12px;display:block;background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.song-card{display:grid;gap:10px}
+.song-card iframe{width:100%;height:130px;border:0;border-radius:12px;display:block;background:color-mix(in srgb,var(--ink) 6%,transparent)}
 .song-credit{font-size:11.5px;opacity:.75}
 .song-credit a{color:inherit}
 .vinyl{display:block;overflow:visible}
@@ -377,9 +372,8 @@ body.locked{overflow:hidden}
       <p class="script eyebrow">La que nos acompaña</p>
       <h2>Nuestra canción</h2>
       <div class="song-card" id="songCard">
-        <div class="song-head"><svg class="vinyl" viewBox="0 0 64 64" aria-hidden="true"><g class="vinyl-spin"><circle class="rec" cx="32" cy="32" r="31"/><circle class="groove" cx="32" cy="32" r="26"/><circle class="groove" cx="32" cy="32" r="21.5"/><circle class="groove" cx="32" cy="32" r="17"/><circle class="lbl" cx="32" cy="32" r="11"/><circle class="hole" cx="32" cy="32" r="2.2"/><path class="shine" d="M14 20 A22 22 0 0 1 24 11"/></g></svg><div><p class="song-title" data-bind="cancionTitulo"></p><p class="song-artist" data-bind="cancionArtista"></p><p class="song-note" data-bind="cancionNota"></p></div></div>
         <iframe id="scPlayer" title="Reproductor de SoundCloud" allow="autoplay" loading="lazy"></iframe>
-        <p class="song-credit">Música de <a id="songLink" href="#" target="_blank" rel="noopener"></a> en SoundCloud. Toca el disco de arriba para escucharla mientras recorres la invitación.</p>
+        <p class="song-credit"><span data-bind="cancionNota"></span>. Toca el disco de arriba para escucharla mientras recorres la invitación. <a id="songLink" href="#" target="_blank" rel="noopener">Ver en SoundCloud</a></p>
       </div>
     </section>
 
@@ -650,18 +644,18 @@ const FOTOS = {};
   let sc=null, scListo=false, quierePlay=false, sonando=false, pillTimer=null, avisoTimer=null;
   function mostrarPill(texto,ms){ pill.textContent=texto; pill.classList.add('show'); clearTimeout(pillTimer); if(ms) pillTimer=setTimeout(()=>pill.classList.remove('show'),ms); }
   function estadoDisco(on){
-    sonando=on; disc.classList.toggle('playing',on); $("#songCard").classList.toggle('playing',on);
+    sonando=on; disc.classList.toggle('playing',on);
     discBtn.setAttribute('aria-pressed',on); discBtn.setAttribute('aria-label',on?"Pausar nuestra canción":"Reproducir nuestra canción");
   }
   function subirVolumen(){ let v=0; sc.setVolume(0); const t=setInterval(()=>{ v+=10; sc.setVolume(Math.min(v,100)); if(v>=100) clearInterval(t); },120); }
   if(!hayCancion){ $("#cancion").hidden=true; }
   else{
-    bind({cancionTitulo:CS.titulo||"",cancionArtista:CS.artista||"",cancionNota:CS.nota||""});
-    $("#songLink").href=pill.href=CS.url; $("#songLink").textContent=CS.artista||"el artista";
+    bind({cancionNota:CS.nota||""});
+    $("#songLink").href=pill.href=CS.url;
     const iframe=$("#scPlayer");
     iframe.src="https://w.soundcloud.com/player/?url="+encodeURIComponent(CS.url)+
       "&color=%23"+(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().replace('#','')||"8c3438")+
-      "&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=false";
+      "&auto_play=false&visual=false&show_artwork=false&show_user=true&show_comments=false&show_playcount=false&show_reposts=false&show_teaser=false&hide_related=true&buying=false&sharing=false&download=false";
     const api=document.createElement('script'); api.src="https://w.soundcloud.com/player/api.js";
     api.onload=()=>{
       sc=SC.Widget(iframe);
