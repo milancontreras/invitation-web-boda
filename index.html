@@ -43,6 +43,14 @@ const CONFIG = {
   ],
 
   // Fotos: archivos dentro de la carpeta fotos/ (formato WebP, 660 × 880 px).
+  // Nuestra canción: link de SoundCloud. Vacío "" = sin música.
+  cancion: {
+    url: "https://soundcloud.com/he-her-music/my-beloved-monster-acoustic-cover",
+    titulo: "My Beloved Monster",
+    artista: "He & Her music",
+    nota: "Cover acústico · canción original de Eels"
+  },
+
   fotos: [
     { archivo: "fotos/foto3.webp" },
     { archivo: "fotos/foto1.webp" },
@@ -75,7 +83,7 @@ const CONFIG = {
   sobreDeEntrada: true,
   corazones: true,
   texturaPapel: true,
-  secciones: { cuenta: true, historia: true, fotos: true, itinerario: true, lugar: true, vestimenta: true, regalos: true }
+  secciones: { cuenta: true, historia: true, fotos: true, cancion: true, itinerario: true, lugar: true, vestimenta: true, regalos: true }
 };
 </script>
 <style>
@@ -259,6 +267,32 @@ body.locked{overflow:hidden}
 .opening .seal{opacity:0}
 .opening .env-flap{transform:rotateX(180deg);z-index:0}
 .opening .env-letter{transform:translateY(-78px)}
+.song-card{background:var(--card);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:20px;padding:20px 18px 18px;display:grid;gap:14px}
+.song-head{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;align-items:center;text-align:left}
+.song-head .vinyl{width:64px;height:64px}
+.song-title{font-family:var(--f-display);font-style:var(--display-style);font-size:22px;line-height:1.1;text-transform:var(--display-transform)}
+.song-artist{font-size:12px;letter-spacing:.16em;text-transform:uppercase;opacity:.75;margin-top:4px !important}
+.song-note{font-size:12.5px;opacity:.8;margin-top:3px !important;font-style:italic}
+.song-card iframe{width:100%;height:166px;border:0;border-radius:12px;display:block;background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.song-credit{font-size:11.5px;opacity:.75}
+.song-credit a{color:inherit}
+.vinyl{display:block;overflow:visible}
+.vinyl .rec{fill:var(--ink)}
+.vinyl .groove{fill:none;stroke:color-mix(in srgb,var(--bg) 35%,transparent);stroke-width:1}
+.vinyl .lbl{fill:var(--accent)}
+.vinyl .hole{fill:var(--bg)}
+.vinyl .shine{fill:none;stroke:color-mix(in srgb,var(--bg) 55%,transparent);stroke-width:2;stroke-linecap:round}
+.vinyl-spin{transform-origin:50% 50%;transform-box:fill-box;animation:spin 3.2s linear infinite;animation-play-state:paused}
+.playing .vinyl-spin{animation-play-state:running}
+@keyframes spin{to{transform:rotate(360deg)}}
+.disc{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));right:14px;z-index:21;display:flex;align-items:center;gap:8px;flex-direction:row-reverse}
+.disc button{width:52px;height:52px;border-radius:50%;border:0;padding:0;background:transparent;cursor:pointer;filter:drop-shadow(0 6px 14px rgba(34,9,14,.3))}
+.disc button svg{width:52px;height:52px}
+.disc button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.disc .note{position:absolute;left:-4px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--btn-text);display:grid;place-items:center;font-size:11px;pointer-events:none}
+.disc-pill{background:var(--ink);color:var(--bg);font-size:11.5px;padding:7px 12px;border-radius:999px;max-width:min(240px,calc(100vw - 100px));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none;opacity:0;transform:translateX(8px);transition:opacity .35s,transform .35s;pointer-events:none}
+.disc-pill.show{opacity:1;transform:none;pointer-events:auto}
+@media (prefers-reduced-motion:reduce){.vinyl-spin{animation:none}.disc-pill{transition:none}}
 .quickbar{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;gap:6px;padding:6px;border-radius:999px;
   background:var(--ink);box-shadow:0 10px 28px rgba(34,9,14,.35);transform:translate(-50%,140%);opacity:0;transition:transform .45s cubic-bezier(.3,.7,.3,1),opacity .3s;
   max-width:calc(100% - 32px);font-family:var(--f-body)}
@@ -338,6 +372,17 @@ body.locked{overflow:hidden}
       <p class="swipe">Desliza para ver más →</p>
     </section>
 
+    <section data-sec="cancion" id="cancion">
+      <div class="divider deco" data-ill="ramita"></div>
+      <p class="script eyebrow">La que nos acompaña</p>
+      <h2>Nuestra canción</h2>
+      <div class="song-card" id="songCard">
+        <div class="song-head"><svg class="vinyl" viewBox="0 0 64 64" aria-hidden="true"><g class="vinyl-spin"><circle class="rec" cx="32" cy="32" r="31"/><circle class="groove" cx="32" cy="32" r="26"/><circle class="groove" cx="32" cy="32" r="21.5"/><circle class="groove" cx="32" cy="32" r="17"/><circle class="lbl" cx="32" cy="32" r="11"/><circle class="hole" cx="32" cy="32" r="2.2"/><path class="shine" d="M14 20 A22 22 0 0 1 24 11"/></g></svg><div><p class="song-title" data-bind="cancionTitulo"></p><p class="song-artist" data-bind="cancionArtista"></p><p class="song-note" data-bind="cancionNota"></p></div></div>
+        <iframe id="scPlayer" title="Reproductor de SoundCloud" allow="autoplay" loading="lazy"></iframe>
+        <p class="song-credit">Música de <a id="songLink" href="#" target="_blank" rel="noopener"></a> en SoundCloud. Toca el disco de arriba para escucharla mientras recorres la invitación.</p>
+      </div>
+    </section>
+
     <section data-sec="itinerario">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">El gran día</p>
@@ -412,6 +457,11 @@ body.locked{overflow:hidden}
       <p class="tag" data-bind="hashtag"></p>
     </footer>
   </main>
+
+  <div class="disc" id="disc" hidden>
+    <button type="button" id="discBtn" aria-pressed="false" aria-label="Reproducir nuestra canción"><svg class="vinyl" viewBox="0 0 64 64" aria-hidden="true"><g class="vinyl-spin"><circle class="rec" cx="32" cy="32" r="31"/><circle class="groove" cx="32" cy="32" r="26"/><circle class="groove" cx="32" cy="32" r="21.5"/><circle class="groove" cx="32" cy="32" r="17"/><circle class="lbl" cx="32" cy="32" r="11"/><circle class="hole" cx="32" cy="32" r="2.2"/><path class="shine" d="M14 20 A22 22 0 0 1 24 11"/></g></svg><span class="note" aria-hidden="true">♪</span></button>
+    <a class="disc-pill" id="discPill" href="#" target="_blank" rel="noopener"></a>
+  </div>
 
   <nav class="quickbar" id="quickbar" aria-label="Accesos rápidos">
     <a class="qb main" id="qbRsvp" href="#rsvp" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12v8H2z M2 4l6 5 6-5"/></svg><span id="qbRsvpTxt">Confirmar asistencia</span></a>
@@ -594,14 +644,53 @@ const FOTOS = {};
 
   $("#bankBtn").addEventListener('click',()=>{ const b=$("#bank"); b.hidden=!b.hidden; $("#bankBtn").textContent=b.hidden?"Ver datos para transferencia":"Ocultar datos"; });
 
+  /* ---------- Nuestra canción (SoundCloud) ---------- */
+  const CS=CONFIG.cancion||{}, disc=$("#disc"), discBtn=$("#discBtn"), pill=$("#discPill");
+  const hayCancion=!!CS.url && CONFIG.secciones.cancion!==false;
+  let sc=null, scListo=false, quierePlay=false, sonando=false, pillTimer=null, avisoTimer=null;
+  function mostrarPill(texto,ms){ pill.textContent=texto; pill.classList.add('show'); clearTimeout(pillTimer); if(ms) pillTimer=setTimeout(()=>pill.classList.remove('show'),ms); }
+  function estadoDisco(on){
+    sonando=on; disc.classList.toggle('playing',on); $("#songCard").classList.toggle('playing',on);
+    discBtn.setAttribute('aria-pressed',on); discBtn.setAttribute('aria-label',on?"Pausar nuestra canción":"Reproducir nuestra canción");
+  }
+  function subirVolumen(){ let v=0; sc.setVolume(0); const t=setInterval(()=>{ v+=10; sc.setVolume(Math.min(v,100)); if(v>=100) clearInterval(t); },120); }
+  if(!hayCancion){ $("#cancion").hidden=true; }
+  else{
+    bind({cancionTitulo:CS.titulo||"",cancionArtista:CS.artista||"",cancionNota:CS.nota||""});
+    $("#songLink").href=pill.href=CS.url; $("#songLink").textContent=CS.artista||"el artista";
+    const iframe=$("#scPlayer");
+    iframe.src="https://w.soundcloud.com/player/?url="+encodeURIComponent(CS.url)+
+      "&color=%23"+(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().replace('#','')||"8c3438")+
+      "&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=false";
+    const api=document.createElement('script'); api.src="https://w.soundcloud.com/player/api.js";
+    api.onload=()=>{
+      sc=SC.Widget(iframe);
+      sc.bind(SC.Widget.Events.READY,()=>{ scListo=true; if(quierePlay) sc.play(); });
+      sc.bind(SC.Widget.Events.PLAY,()=>{ clearTimeout(avisoTimer); if(!sonando) subirVolumen(); estadoDisco(true); mostrarPill("♪ "+(CS.titulo||"")+" · "+(CS.artista||"")+" · SoundCloud",4500); });
+      sc.bind(SC.Widget.Events.PAUSE,()=>estadoDisco(false));
+      sc.bind(SC.Widget.Events.FINISH,()=>{ sc.seekTo(0); sc.play(); });
+    };
+    document.head.appendChild(api);
+    discBtn.addEventListener('click',()=>{
+      if(sonando){ sc&&sc.pause(); return; }
+      quierePlay=true;
+      if(scListo) sc.play();
+      clearTimeout(avisoTimer);
+      avisoTimer=setTimeout(()=>{ if(!sonando) mostrarPill("Toca ▶ en «Nuestra canción» para empezar",5000); },2200);
+    });
+    document.addEventListener('visibilitychange',()=>{ if(document.hidden && sonando && sc) sc.pause(); });
+  }
+  function mostrarDisco(){ if(hayCancion) disc.hidden=false; }
+
   /* ---------- Sobre ---------- */
   const env=$("#envelope");
   if(CONFIG.sobreDeEntrada){ env.hidden=false; document.body.classList.add('locked'); }
+  else mostrarDisco();
   env.addEventListener('click',()=>{
     if(env.disabled) return;
     env.classList.add('opening');
     setTimeout(()=>env.classList.add('gone'),1300);
-    setTimeout(()=>{ env.hidden=true; document.body.classList.remove('locked'); replay($("#coverIll .ill")); const sv=$("#coverIll svg.mia"); if(sv) sv.replaceWith(sv.cloneNode(true)); $$(".corner .ill").forEach(replay); },1900);
+    setTimeout(()=>{ env.hidden=true; document.body.classList.remove('locked'); mostrarDisco(); replay($("#coverIll .ill")); const sv=$("#coverIll svg.mia"); if(sv) sv.replaceWith(sv.cloneNode(true)); $$(".corner .ill").forEach(replay); },1900);
   });
 
   /* ---------- Invitado y confirmación ---------- */
