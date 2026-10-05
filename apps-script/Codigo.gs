@@ -73,10 +73,11 @@ function prepararHoja() {
   let cf = ss.getSheetByName(CONFIG);
   if (!cf) {
     cf = ss.insertSheet(CONFIG);
-    cf.getRange('A1:B3').setValues([
+    cf.getRange('A1:B4').setValues([
       ['Ajuste', 'Valor'],
-      ['Dirección de la página', 'https://tu-boda.netlify.app/'],
-      ['Mensaje para WhatsApp', '¡Hola! Con mucho cariño te compartimos nuestra invitación de boda:']
+      ['Dirección de la página', 'https://milancontreras.github.io/invitation-web-boda/'],
+      ['Mensaje para WhatsApp', '¡Hola! Con mucho cariño te compartimos nuestra invitación de boda:'],
+      ['Código de país para WhatsApp', "'593"]
     ]);
     cf.getRange('A1:B1').setFontWeight('bold').setBackground(VINO).setFontColor(MARFIL);
     cf.setColumnWidth(1, 220);
@@ -123,7 +124,8 @@ function completarFilas() {
     codigos.push([codigo]);
     formulas.push(hay ? [
       `=IF(A${r}=""${S}""${S}Config!$B$2&"?i="&A${r})`,
-      `=IF(OR(A${r}=""${S}D${r}="")${S}""${S}HYPERLINK("https://wa.me/"&REGEXREPLACE(TO_TEXT(D${r})${S}"[^0-9]"${S}"")&"?text="&ENCODEURL(Config!$B$3&" "&E${r})${S}"Enviar"))`
+      // Un número local como 0991234567 se convierte a 593991234567 con el código de país de Config!B4.
+      `=IF(OR(A${r}=""${S}D${r}="")${S}""${S}LET(n${S}REGEXREPLACE(TO_TEXT(D${r})${S}"[^0-9]"${S}"")${S}HYPERLINK("https://wa.me/"&IF(LEFT(n${S}1)="0"${S}Config!$B$4&MID(n${S}2${S}20)${S}n)&"?text="&ENCODEURL(Config!$B$3&" "&E${r})${S}"Enviar")))`
     ] : ['', '']);
     estados.push([hay && !f[COL.respuesta - 1] ? 'Pendiente' : f[COL.respuesta - 1]]);
   });
