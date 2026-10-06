@@ -50,7 +50,7 @@ const CONFIG = {
       url: "https://open.spotify.com/track/6r5rICHmvC48TC6vY9JEYL",
       titulo: "My Beloved Monster",
       artista: "Eels",
-      nota: "Canción original de Eels"
+      nota: ""
     },
     soundcloud: {
       url: "https://soundcloud.com/he-her-music/my-beloved-monster-acoustic-cover",
@@ -385,7 +385,7 @@ body.locked{overflow:hidden}
       <h2>Nuestra canción</h2>
       <div class="song-card" id="songCard">
         <div class="song-embed" id="songEmbed"></div>
-        <p class="song-credit"><span data-bind="cancionNota"></span>. Toca el disco de arriba para escucharla mientras recorres la invitación. <a id="songLink" href="#" target="_blank" rel="noopener"></a></p>
+        <p class="song-credit"><span data-bind="cancionNota"></span>Toca el disco de arriba para escucharla mientras recorres la invitación. <a id="songLink" href="#" target="_blank" rel="noopener"></a></p>
       </div>
     </section>
 
@@ -705,7 +705,7 @@ const FOTOS = {};
 
   if(!hayCancion){ $("#cancion").hidden=true; }
   else{
-    bind({cancionNota:CS.nota||""});
+    bind({cancionNota:CS.nota?CS.nota+". ":""});
     $("#songLink").href=pill.href=CS.url; $("#songLink").textContent="Ver en "+nombrePlat;
     prov==="spotify" ? iniciarSpotify() : iniciarSoundCloud();
     discBtn.addEventListener('click',()=>{
