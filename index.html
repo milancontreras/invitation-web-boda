@@ -538,6 +538,9 @@ const FOTOS = {};
     document.body.style.background=p.bg;
   }
   aplicarPaleta(pal);
+  /* El sobre de entrada siempre usa la paleta marfil, sin importar la paleta de la invitación */
+  const sobreEl=document.getElementById('envelope'), M=PALETAS.marfil;
+  if(sobreEl) Object.entries({bg:M.bg,ink:M.ink,accent:M.accent,soft:M.soft,card:M.card,'btn-text':M.btn}).forEach(([k,v])=>sobreEl.style.setProperty('--'+k,v));
   Object.entries({
     'f-display':fn.fam,'display-style':fn.style,'display-weight':fn.weight,'display-size':fn.size,'display-transform':fn.tt,'display-ls':fn.ls,
     'f-script':fm.fam,'script-size':fm.size}).forEach(([k,v])=>st.setProperty('--'+k,v));
