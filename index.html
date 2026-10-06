@@ -82,7 +82,7 @@ const CONFIG = {
   diasParaConfirmar: 30,        // fecha límite = boda menos estos días
 
   // Diseño (las mismas opciones del simulador)
-  paleta: "marfil",             // marfil · rosa · vino · jardin
+  paleta: "noche",              // noche · marfil · rosa · vino · jardin
   letraNombres: "cormorant",    // cormorant · playfair · bodoni · italiana
   letraMano: "caveat",          // caveat · apple · pinyon · vibes
   portada: "mia",               // mia (su ilustración) · copas · anillos · auto · pastel · velas · sobre
@@ -276,6 +276,24 @@ body.locked{overflow:hidden}
 .opening .seal{opacity:0}
 .opening .env-flap{transform:rotateX(180deg);z-index:0}
 .opening .env-letter{transform:translateY(-78px)}
+.dev-pal{max-width:480px;margin:0 auto;padding:18px 18px 110px;background:#1d1d1f;color:#f5f5f7;font-family:'Jost',system-ui,sans-serif;font-size:13px;text-align:left}
+.dev-t{margin:0 0 10px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.75}
+.dev-chips{display:flex;flex-wrap:wrap;gap:8px}
+.dev-chip-w{display:inline-flex;align-items:center}
+.dev-chip{display:inline-flex;align-items:center;gap:8px;border:1px solid #48484a;background:#2c2c2e;color:#f5f5f7;border-radius:999px;padding:6px 12px 6px 6px;font:inherit;cursor:pointer}
+.dev-chip[aria-pressed="true"]{border-color:#f5f5f7;box-shadow:inset 0 0 0 1px #f5f5f7}
+.dev-chip i{display:flex}.dev-chip i span{width:14px;height:14px;border-radius:50%;margin-left:-4px;border:1.5px solid #2c2c2e}.dev-chip i span:first-child{margin-left:0}
+.dev-del{border:0;background:transparent;color:#aeaeb2;font-size:18px;line-height:1;padding:0 6px;cursor:pointer}
+.dev-add{margin-top:14px}
+.dev-add summary{cursor:pointer;font-weight:500}
+.dev-add p{margin:8px 0;opacity:.8;line-height:1.4}
+.dev-add code{font-size:12px}
+.dev-add textarea,.dev-add input{width:100%;background:#2c2c2e;border:1px solid #48484a;border-radius:8px;color:#f5f5f7;font:12px/1.4 ui-monospace,Menlo,monospace;padding:8px}
+.dev-row{display:flex;gap:8px;margin-top:8px}
+.dev-row input{font-family:'Jost',system-ui,sans-serif;font-size:13px;flex:1;min-width:0}
+.dev-row button{border:0;border-radius:8px;background:#f5f5f7;color:#1d1d1f;font:inherit;font-weight:500;padding:8px 12px;cursor:pointer;white-space:nowrap}
+.dev-err{color:#ff9f8a !important;opacity:1 !important}
+.dev-chip:focus-visible,.dev-del:focus-visible,.dev-row button:focus-visible{outline:2px solid #f5f5f7;outline-offset:2px}
 .song-card{display:grid;gap:10px}
 .song-embed{border-radius:12px;overflow:hidden}
 .song-embed iframe{display:block;width:100%;border:0}
@@ -551,6 +569,7 @@ const FOTOS = {};
     marfil:{bg:"#F8F0DC",ink:"#3B1219",accent:"#8C3438",soft:"#EFD3CB",leaf:"#5F6A33",card:"#FCF7EB",btn:"#F8F0DC"},
     rosa:{bg:"#F2D5CD",ink:"#3B1219",accent:"#8C3438",soft:"#F8E9DA",leaf:"#5F6A33",card:"#F9E7E1",btn:"#F8F0DC"},
     vino:{bg:"#3B1219",ink:"#F3E6BE",accent:"#E8BFB7",soft:"#4C1B23",leaf:"#AAB36C",card:"#47171F",btn:"#3B1219"},
+    noche:{bg:"#3B1219",ink:"#FDFDF8",accent:"#E9C8C3",soft:"#5A541E",leaf:"#9FA91F",card:"#47171F",btn:"#3B1219"},
     jardin:{bg:"#F3EBD2",ink:"#3B1219",accent:"#5F6A33",soft:"#E4E2C6",leaf:"#5F6A33",card:"#FAF4E4",btn:"#F8F0DC"}
   };
   const NOMBRES={
@@ -565,16 +584,30 @@ const FOTOS = {};
     pinyon:{g:"Pinyon+Script",fam:"'Pinyon Script', cursive",size:"32px"},
     vibes:{g:"Great+Vibes",fam:"'Great Vibes', cursive",size:"34px"}
   };
-  const pal=PALETAS[CONFIG.paleta]||PALETAS.marfil, fn=NOMBRES[CONFIG.letraNombres]||NOMBRES.cormorant, fm=MANO[CONFIG.letraMano]||MANO.caveat;
+  /* Modo pruebas: solo al abrir la invitación como archivo local o en localhost, nunca en la página publicada */
+  const modoPruebas = location.protocol==="file:" || ["localhost","127.0.0.1"].includes(location.hostname);
+  const LS_PAL="pruebas:paletas", LS_ACT="pruebas:paleta";
+  const leerLS=(k,def)=>{ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(_){ return def; } };
+  const guardarLS=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(_){} };
+  if(modoPruebas) Object.assign(PALETAS, leerLS(LS_PAL,{}));
+  const paletaActiva = (modoPruebas && PALETAS[leerLS(LS_ACT,"")]) ? leerLS(LS_ACT,"") : CONFIG.paleta;
+  const pal=PALETAS[paletaActiva]||PALETAS.marfil, fn=NOMBRES[CONFIG.letraNombres]||NOMBRES.cormorant, fm=MANO[CONFIG.letraMano]||MANO.caveat;
   const link=document.createElement('link'); link.rel='stylesheet';
   link.href=`https://fonts.googleapis.com/css2?family=${fn.g}&family=${fm.g}&family=Jost:wght@300;400;500&display=swap`;
   document.head.appendChild(link);
   const st=document.documentElement.style;
-  Object.entries({bg:pal.bg,ink:pal.ink,accent:pal.accent,soft:pal.soft,leaf:pal.leaf,card:pal.card,'btn-text':pal.btn,
+  function aplicarPaleta(p){
+    Object.entries({bg:p.bg,ink:p.ink,accent:p.accent,soft:p.soft,leaf:p.leaf,card:p.card,'btn-text':p.btn}).forEach(([k,v])=>st.setProperty('--'+k,v));
+    document.body.style.background=p.bg;
+  }
+  aplicarPaleta(pal);
+  /* El sobre de entrada siempre usa la paleta marfil, sin importar la paleta de la invitación */
+  const sobreEl=document.getElementById('envelope'), M=PALETAS.marfil;
+  if(sobreEl) Object.entries({bg:M.bg,ink:M.ink,accent:M.accent,soft:M.soft,card:M.card,'btn-text':M.btn}).forEach(([k,v])=>sobreEl.style.setProperty('--'+k,v));
+  Object.entries({
     'f-display':fn.fam,'display-style':fn.style,'display-weight':fn.weight,'display-size':fn.size,'display-transform':fn.tt,'display-ls':fn.ls,
     'f-script':fm.fam,'script-size':fm.size}).forEach(([k,v])=>st.setProperty('--'+k,v));
   st.setProperty('--stroke',`var(--${CONFIG.colorTrazo||'ink'})`);
-  document.body.style.background=pal.bg;
   root.classList.toggle('paper',CONFIG.texturaPapel);
   root.classList.toggle('few',!CONFIG.muchosAdornos);
   root.classList.toggle('draw-on',CONFIG.trazoAnimado);
@@ -657,6 +690,41 @@ const FOTOS = {};
 
   $("#bankBtn").addEventListener('click',()=>{ const b=$("#bank"); b.hidden=!b.hidden; $("#bankBtn").textContent=b.hidden?"Ver datos para transferencia":"Ocultar datos"; });
 
+  /* ---------- Selector de paletas (solo modo pruebas) ---------- */
+  if(modoPruebas){
+    const box=document.createElement('div'); box.className='dev-pal'; box.setAttribute('role','region'); box.setAttribute('aria-label','Selector de paletas (solo en pruebas)');
+    box.innerHTML=`<p class="dev-t">Paletas · solo en pruebas</p><div class="dev-chips" id="devChips"></div>
+      <details class="dev-add"><summary>Agregar paleta</summary>
+        <p>Pega aquí lo que copiaste del editor de colores, por ejemplo <code>miPaleta: { bg: "#…", … }</code>.</p>
+        <textarea id="devTxt" rows="3" spellcheck="false"></textarea>
+        <div class="dev-row"><input id="devName" placeholder="Nombre (opcional)" maxlength="24"><button type="button" id="devAddBtn">Agregar y usar</button></div>
+        <p class="dev-err" id="devErr" hidden></p>
+      </details>`;
+    $("footer.foot").after(box);
+    const propias=()=>leerLS(LS_PAL,{});
+    let activa=paletaActiva;
+    function pintar(){
+      $("#devChips").innerHTML=Object.entries(PALETAS).map(([k,p])=>`<span class="dev-chip-w"><button type="button" class="dev-chip" data-k="${k}" aria-pressed="${k===activa}"><i>${["bg","ink","accent","soft","leaf"].map(t=>`<span style="background:${p[t]}"></span>`).join("")}</i>${k}${k===CONFIG.paleta?" ★":""}</button>${propias()[k]?`<button type="button" class="dev-del" data-del="${k}" aria-label="Borrar ${k}">×</button>`:""}</span>`).join("");
+    }
+    function usar(k){ activa=k; aplicarPaleta(PALETAS[k]); guardarLS(LS_ACT,k); pintar(); }
+    $("#devChips").addEventListener('click',e=>{
+      const d=e.target.closest('[data-del]');
+      if(d){ const k=d.dataset.del, mias=propias(); delete mias[k]; delete PALETAS[k]; guardarLS(LS_PAL,mias); if(activa===k) usar(CONFIG.paleta); else pintar(); return; }
+      const b=e.target.closest('.dev-chip'); if(b) usar(b.dataset.k);
+    });
+    $("#devAddBtn").addEventListener('click',()=>{
+      const txt=$("#devTxt").value, err=$("#devErr"); err.hidden=true;
+      const nombreTxt=(txt.match(/^\s*([A-Za-z0-9_áéíóúñ-]+)\s*:/)||[])[1];
+      const p={}; ["bg","ink","accent","soft","leaf","card","btn"].forEach(t=>{ const m=txt.match(new RegExp(t+'\\s*:\\s*"(#[0-9a-fA-F]{6})"')); if(m) p[t]=m[1].toUpperCase(); });
+      const faltan=["bg","ink","accent","soft","leaf","card","btn"].filter(t=>!p[t]);
+      if(faltan.length){ err.textContent="Faltan colores: "+faltan.join(", ")+". Copia la paleta completa desde el editor."; err.hidden=false; return; }
+      let nombre=($("#devName").value.trim()||nombreTxt||"mi paleta").replace(/\s+/g,"-");
+      while(PALETAS[nombre] && !propias()[nombre]) nombre+="-2";
+      const mias=propias(); mias[nombre]=p; guardarLS(LS_PAL,mias); PALETAS[nombre]=p;
+      $("#devTxt").value=""; $("#devName").value=""; usar(nombre);
+    });
+    pintar();
+  }
   /* ---------- Nuestra canción (Spotify o SoundCloud) ---------- */
   const prov=(CONFIG.cancion||{}).proveedor||"";
   const CS=((CONFIG.cancion||{})[prov])||{}, disc=$("#disc"), discBtn=$("#discBtn"), pill=$("#discPill");
