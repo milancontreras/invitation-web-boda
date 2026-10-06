@@ -440,6 +440,13 @@ const FOTOS = {};
 <script>
 (function(){
   const $ = s => document.querySelector(s), $$ = s => Array.from(document.querySelectorAll(s));
+
+  /* La invitación siempre abre desde el principio, aunque se recargue o se vuelva a ella */
+  if('scrollRestoration' in history) history.scrollRestoration='manual';
+  if(location.hash) history.replaceState(null,'',location.pathname+location.search);
+  const alInicio=()=>window.scrollTo(0,0);
+  alInicio();
+  addEventListener('pageshow',e=>{ if(e.persisted) alInicio(); });
   const root = $("#root");
 
   /* ---------- Ilustraciones originales ---------- */
