@@ -66,6 +66,7 @@ const CONFIG = {
 
   // Diseño (las mismas opciones del simulador)
   paleta: "noche",              // noche · marfil · rosa · vino · jardin
+  cortes: { claro: "marfil", oscuro: "noche" }, // franjas claras y oscuras; null = toda la invitación con "paleta"
   letraNombres: "cormorant",    // cormorant · playfair · bodoni · italiana
   letraMano: "caveat",          // caveat · apple · pinyon · vibes
   portada: "mia",               // mia (su ilustración) · copas · anillos · auto · pastel · velas · sobre
@@ -230,6 +231,16 @@ body.locked{overflow:hidden}
 .tag{font-size:12px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px !important;font-weight:400}
 .few .deco{display:none}
 
+/* Cortes claro / oscuro con borde de onda dibujada a mano */
+.cortes .inv [data-tono]{background-color:var(--bg);color:var(--ink)}
+.cortes.paper .inv [data-tono]{background-image:inherit}
+.inv .corte{z-index:0;position:relative}
+.inv .corte::before,.inv .corte::after{content:"";position:absolute;left:0;right:0;top:-17px;height:18px;pointer-events:none;z-index:2;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 18' preserveAspectRatio='none'%3E%3Cpath d='M0 11 C30 6 52 13 88 10 S150 4 196 9 S262 15 310 10 S380 4 420 9 S462 13 480 9 V18 H0 Z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 18' preserveAspectRatio='none'%3E%3Cpath d='M0 11 C30 6 52 13 88 10 S150 4 196 9 S262 15 310 10 S380 4 420 9 S462 13 480 9 V18 H0 Z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;background:var(--bg)}
+.inv .corte::after{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 18' preserveAspectRatio='none'%3E%3Cpath d='M0 11 C30 6 52 13 88 10 S150 4 196 9 S262 15 310 10 S380 4 420 9 S462 13 480 9' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 18' preserveAspectRatio='none'%3E%3Cpath d='M0 11 C30 6 52 13 88 10 S150 4 196 9 S262 15 310 10 S380 4 420 9 S462 13 480 9' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");background:color-mix(in srgb,var(--ink) 35%,transparent)}
+.inv .corte.alt::before,.inv .corte.alt::after{transform:scaleX(-1)}
+/* El pase se pinta con el tono contrario para que resalte */
+.rsvp-pass.contraste{background:var(--bg);color:var(--ink);border:1px solid var(--accent);box-shadow:0 8px 20px rgba(34,9,14,.22);padding:12px 20px}
 .envelope{position:fixed;inset:0;z-index:30;background-color:var(--bg);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
   cursor:pointer;transition:opacity .7s,transform .7s;font-family:var(--f-body);border:0;width:100%;padding:24px}
 .envelope.gone{opacity:0;transform:translateY(-3%);pointer-events:none}
@@ -260,6 +271,7 @@ body.locked{overflow:hidden}
 .opening .env-flap{transform:rotateX(180deg);z-index:0}
 .opening .env-letter{transform:translateY(-78px)}
 .dev-pal{max-width:480px;margin:0 auto;padding:18px 18px 110px;background:#1d1d1f;color:#f5f5f7;font-family:'Jost',system-ui,sans-serif;font-size:13px;text-align:left}
+.dev-seg{display:flex;gap:6px;margin:0 0 10px}.dev-seg button{flex:1;border:1px solid #48484a;background:#2c2c2e;color:#f5f5f7;border-radius:8px;padding:7px;font:inherit;cursor:pointer}.dev-seg button[aria-pressed="true"]{background:#f5f5f7;color:#1d1d1f}
 .dev-t{margin:0 0 10px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.75}
 .dev-chips{display:flex;flex-wrap:wrap;gap:8px}
 .dev-chip-w{display:inline-flex;align-items:center}
@@ -307,7 +319,7 @@ body.locked{overflow:hidden}
 
 <div id="root">
   <main class="inv" id="inv">
-    <section class="cover">
+    <section class="cover" data-tono="oscuro">
       <div class="petals" id="petals"></div>
       <div class="corner tl deco" data-ill="rosa"></div>
       <div class="corner br deco" data-ill="rosa"></div>
@@ -318,13 +330,13 @@ body.locked{overflow:hidden}
       <p class="hint">Desliza<i></i></p>
     </section>
 
-    <section class="personal" id="personal" hidden>
+    <section class="personal" id="personal" data-tono="claro" hidden>
       <div class="divider deco" data-ill="ramita"></div>
       <p class="who" data-bind="invitacion"></p>
       <p class="seats">Con mucha alegría queremos compartir este día contigo.</p>
     </section>
 
-    <section data-sec="cuenta">
+    <section data-sec="cuenta" data-tono="claro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">Falta poquito</p>
       <h2>Cuenta regresiva</h2>
@@ -341,14 +353,14 @@ body.locked{overflow:hidden}
       </div>
     </section>
 
-    <section data-sec="historia">
+    <section data-sec="historia" data-tono="oscuro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">Así empezó todo</p>
       <h2>Nuestra historia</h2>
       <ol class="story" id="story"></ol>
     </section>
 
-    <section data-sec="fotos">
+    <section data-sec="fotos" data-tono="oscuro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">Nuestros momentos</p>
       <h2>Tú y yo</h2>
@@ -356,14 +368,14 @@ body.locked{overflow:hidden}
       <p class="swipe">Desliza para ver más →</p>
     </section>
 
-    <section data-sec="itinerario">
+    <section data-sec="itinerario" data-tono="claro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">El gran día</p>
       <h2>Itinerario</h2>
       <ul class="timeline" id="timeline"></ul>
     </section>
 
-    <section data-sec="lugar" id="ubicacion">
+    <section data-sec="lugar" id="ubicacion" data-tono="claro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">Dónde</p>
       <h2>Ceremonia y recepción</h2>
@@ -376,7 +388,7 @@ body.locked{overflow:hidden}
       </article>
     </section>
 
-    <section data-sec="vestimenta" class="dress">
+    <section data-sec="vestimenta" class="dress" data-tono="oscuro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">Qué ponerse</p>
       <h2>Código de vestimenta</h2>
@@ -391,7 +403,7 @@ body.locked{overflow:hidden}
       </div>
     </section>
 
-    <section data-sec="regalos" class="gift">
+    <section data-sec="regalos" class="gift" data-tono="oscuro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">Con cariño</p>
       <h2>Regalos</h2>
@@ -401,7 +413,7 @@ body.locked{overflow:hidden}
       <div class="bank" id="bank" hidden></div>
     </section>
 
-    <section class="rsvp" id="rsvp">
+    <section class="rsvp" id="rsvp" data-tono="claro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">¿Nos acompañas?</p>
       <h2>Confirma tu asistencia</h2>
@@ -424,7 +436,7 @@ body.locked{overflow:hidden}
       <div class="status" id="status" hidden></div>
     </section>
 
-    <footer class="foot">
+    <footer class="foot" data-tono="oscuro">
       <div data-ill="auto"></div>
       <p class="script" data-bind="ambos"></p>
       <p class="tag" data-bind="hashtag"></p>
@@ -545,10 +557,39 @@ const FOTOS = {};
     'f-display':fn.fam,'display-style':fn.style,'display-weight':fn.weight,'display-size':fn.size,'display-transform':fn.tt,'display-ls':fn.ls,
     'f-script':fm.fam,'script-size':fm.size}).forEach(([k,v])=>st.setProperty('--'+k,v));
   st.setProperty('--stroke',`var(--${CONFIG.colorTrazo||'ink'})`);
+
+  /* ---------- Cortes claro / oscuro ---------- */
+  const LS_CORTES="pruebas:cortes";
+  let cortes = CONFIG.cortes ? Object.assign({}, CONFIG.cortes, modoPruebas ? leerLS(LS_CORTES,{}) : {}) : null;
+  ["claro","oscuro"].forEach(t=>{ if(cortes && !PALETAS[cortes[t]]) cortes[t]=CONFIG.cortes[t]; });
+  function varsDe(el,p){
+    Object.entries({bg:p.bg,ink:p.ink,accent:p.accent,soft:p.soft,leaf:p.leaf,card:p.card,'btn-text':p.btn}).forEach(([k,v])=>el.style.setProperty('--'+k,v));
+    el.style.setProperty('--stroke',`var(--${CONFIG.colorTrazo||'ink'})`);
+  }
+  /* Marca dónde empieza cada franja (solo secciones visibles) para dibujar la onda */
+  function marcarCortes(){
+    let prev=null, n=0;
+    $$("#inv > [data-tono]").forEach(el=>{
+      el.classList.remove('corte','alt');
+      if(el.hidden) return;
+      if(cortes && prev && el.dataset.tono!==prev){ el.classList.add('corte'); if(n++%2) el.classList.add('alt'); }
+      prev=el.dataset.tono;
+    });
+  }
+  function aplicarCortes(){
+    root.classList.toggle('cortes',!!cortes);
+    if(!cortes) return;
+    $$("#inv > [data-tono]").forEach(el=>varsDe(el,PALETAS[cortes[el.dataset.tono]]));
+    const pase=$("#rsvpPass"); if(pase){ pase.classList.add('contraste'); varsDe(pase,PALETAS[cortes[pase.closest('[data-tono]').dataset.tono==='claro'?'oscuro':'claro']]); }
+    document.body.style.background=PALETAS[cortes.oscuro].bg;
+    marcarCortes(); tonoBarra&&tonoBarra();
+  }
+  let tonoBarra=null;
   root.classList.toggle('paper',CONFIG.texturaPapel);
   root.classList.toggle('few',!CONFIG.muchosAdornos);
   root.classList.toggle('draw-on',CONFIG.trazoAnimado);
   $$("[data-sec]").forEach(el=>{ el.hidden = CONFIG.secciones[el.dataset.sec]===false; });
+  aplicarCortes();
 
   /* ---------- Contenido ---------- */
   $("#story").innerHTML=CONFIG.historia.map(h=>`<li><div data-ill="${h.dibujo}"></div><div><span class="yr">${h.anio}</span><h3>${h.titulo}</h3><p>${h.texto}</p></div></li>`).join("");
@@ -630,7 +671,7 @@ const FOTOS = {};
   /* ---------- Selector de paletas (solo modo pruebas) ---------- */
   if(modoPruebas){
     const box=document.createElement('div'); box.className='dev-pal'; box.setAttribute('role','region'); box.setAttribute('aria-label','Selector de paletas (solo en pruebas)');
-    box.innerHTML=`<p class="dev-t">Paletas · solo en pruebas</p><div class="dev-chips" id="devChips"></div>
+    box.innerHTML=`<p class="dev-t">Paletas · solo en pruebas</p>${cortes?`<div class="dev-seg" id="devSeg" role="group" aria-label="Franja a cambiar"><button type="button" data-t="claro" aria-pressed="true">Franjas claras</button><button type="button" data-t="oscuro" aria-pressed="false">Franjas oscuras</button></div>`:""}<div class="dev-chips" id="devChips"></div>
       <details class="dev-add"><summary>Agregar paleta</summary>
         <p>Pega aquí lo que copiaste del editor de colores, por ejemplo <code>miPaleta: { bg: "#…", … }</code>.</p>
         <textarea id="devTxt" rows="3" spellcheck="false"></textarea>
@@ -640,13 +681,21 @@ const FOTOS = {};
     $("footer.foot").after(box);
     const propias=()=>leerLS(LS_PAL,{});
     let activa=paletaActiva;
+    let franja="claro";
+    const elegida=()=>cortes?cortes[franja]:activa, porDefecto=()=>cortes?CONFIG.cortes[franja]:CONFIG.paleta;
     function pintar(){
-      $("#devChips").innerHTML=Object.entries(PALETAS).map(([k,p])=>`<span class="dev-chip-w"><button type="button" class="dev-chip" data-k="${k}" aria-pressed="${k===activa}"><i>${["bg","ink","accent","soft","leaf"].map(t=>`<span style="background:${p[t]}"></span>`).join("")}</i>${k}${k===CONFIG.paleta?" ★":""}</button>${propias()[k]?`<button type="button" class="dev-del" data-del="${k}" aria-label="Borrar ${k}">×</button>`:""}</span>`).join("");
+      $("#devChips").innerHTML=Object.entries(PALETAS).map(([k,p])=>`<span class="dev-chip-w"><button type="button" class="dev-chip" data-k="${k}" aria-pressed="${k===elegida()}"><i>${["bg","ink","accent","soft","leaf"].map(t=>`<span style="background:${p[t]}"></span>`).join("")}</i>${k}${k===porDefecto()?" ★":""}</button>${propias()[k]?`<button type="button" class="dev-del" data-del="${k}" aria-label="Borrar ${k}">×</button>`:""}</span>`).join("");
+      $$("#devSeg button").forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===franja));
     }
-    function usar(k){ activa=k; aplicarPaleta(PALETAS[k]); guardarLS(LS_ACT,k); pintar(); }
+    function usar(k){
+      if(cortes){ cortes[franja]=k; guardarLS(LS_CORTES,{claro:cortes.claro,oscuro:cortes.oscuro}); aplicarCortes(); }
+      else { activa=k; aplicarPaleta(PALETAS[k]); guardarLS(LS_ACT,k); }
+      pintar();
+    }
+    if(cortes) $("#devSeg").addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ franja=b.dataset.t; pintar(); } });
     $("#devChips").addEventListener('click',e=>{
       const d=e.target.closest('[data-del]');
-      if(d){ const k=d.dataset.del, mias=propias(); delete mias[k]; delete PALETAS[k]; guardarLS(LS_PAL,mias); if(activa===k) usar(CONFIG.paleta); else pintar(); return; }
+      if(d){ const k=d.dataset.del, mias=propias(); delete mias[k]; delete PALETAS[k]; guardarLS(LS_PAL,mias); if(elegida()===k) usar(porDefecto()); else pintar(); return; }
       const b=e.target.closest('.dev-chip'); if(b) usar(b.dataset.k);
     });
     $("#devAddBtn").addEventListener('click',()=>{
@@ -691,6 +740,14 @@ const FOTOS = {};
   /* ---------- Barra de accesos rápidos ---------- */
   const bar=$("#quickbar"), qbRsvp=$("#qbRsvp"), qbMap=$("#qbMap");
   let pasoPortada=false, veRsvp=false, veLugar=false;
+  /* La barra toma los colores de la franja que tiene detrás, así siempre contrasta */
+  tonoBarra=()=>{
+    if(!cortes) return;
+    const y=innerHeight-40; let t=null;
+    $$("#inv > [data-tono]").forEach(el=>{ if(el.hidden) return; const r=el.getBoundingClientRect(); if(r.top<=y && r.bottom>y) t=el.dataset.tono; });
+    if(t && bar.dataset.tono!==t){ bar.dataset.tono=t; varsDe(bar,PALETAS[cortes[t]]); }
+  };
+  addEventListener('scroll',tonoBarra,{passive:true}); tonoBarra();
   function updateBar(){
     const resp=invitado&&invitado.respuesta;
     qbRsvp.hidden = !invitado || veRsvp || resp==='No asistirá';
@@ -765,7 +822,7 @@ const FOTOS = {};
     invitado=r;
     if(envTo.textContent!=="Para "+r.invitacion) nombreSobre("Para "+r.invitacion);
     bind({invitacion:r.invitacion,pases:r.pases});
-    $("#personal").hidden=false;
+    $("#personal").hidden=false; marcarCortes();
     if(r.respuesta==='Asistirá'||r.respuesta==='No asistirá') mostrarEstado(); else mostrarForm();
   }
   const claveCache="invitado:"+codigo;
