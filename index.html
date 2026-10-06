@@ -43,6 +43,23 @@ const CONFIG = {
   ],
 
   // Fotos: archivos dentro de la carpeta fotos/ (formato WebP, 660 × 880 px).
+  // Nuestra canción. proveedor: "spotify" o "soundcloud". Vacío "" = sin música.
+  cancion: {
+    proveedor: "spotify",
+    spotify: {
+      url: "https://open.spotify.com/track/6r5rICHmvC48TC6vY9JEYL",
+      titulo: "My Beloved Monster",
+      artista: "Eels",
+      nota: ""
+    },
+    soundcloud: {
+      url: "https://soundcloud.com/he-her-music/my-beloved-monster-acoustic-cover",
+      titulo: "My Beloved Monster",
+      artista: "He & Her music",
+      nota: "Cover acústico · canción original de Eels"
+    }
+  },
+
   fotos: [
     { archivo: "fotos/foto3.webp" },
     { archivo: "fotos/foto1.webp" },
@@ -65,7 +82,8 @@ const CONFIG = {
   diasParaConfirmar: 30,        // fecha límite = boda menos estos días
 
   // Diseño (las mismas opciones del simulador)
-  paleta: "marfil",             // marfil · rosa · vino · jardin
+  paleta: "noche",              // noche · marfil · rosa · vino · jardin
+  cortes: { claro: "marfil", oscuro: "noche" }, // franjas claras y oscuras; null = toda la invitación con "paleta"
   letraNombres: "cormorant",    // cormorant · playfair · bodoni · italiana
   letraMano: "caveat",          // caveat · apple · pinyon · vibes
   portada: "mia",               // mia (su ilustración) · copas · anillos · auto · pastel · velas · sobre
@@ -75,7 +93,7 @@ const CONFIG = {
   sobreDeEntrada: true,
   corazones: true,
   texturaPapel: true,
-  secciones: { cuenta: true, historia: true, fotos: true, itinerario: true, lugar: true, vestimenta: true, regalos: true }
+  secciones: { cuenta: true, historia: true, fotos: true, cancion: true, itinerario: true, lugar: true, vestimenta: true, regalos: true }
 };
 </script>
 <style>
@@ -230,6 +248,16 @@ body.locked{overflow:hidden}
 .tag{font-size:12px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px !important;font-weight:400}
 .few .deco{display:none}
 
+/* Cortes claro / oscuro con borde de onda dibujada a mano */
+.cortes .inv [data-tono]{background-color:var(--bg);color:var(--ink)}
+.cortes.paper .inv [data-tono]{background-image:inherit}
+.inv .corte{z-index:0;position:relative}
+.inv .corte::before,.inv .corte::after{content:"";position:absolute;left:0;right:0;top:-17px;height:18px;pointer-events:none;z-index:2;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 18' preserveAspectRatio='none'%3E%3Cpath d='M0 11 C30 6 52 13 88 10 S150 4 196 9 S262 15 310 10 S380 4 420 9 S462 13 480 9 V18 H0 Z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 18' preserveAspectRatio='none'%3E%3Cpath d='M0 11 C30 6 52 13 88 10 S150 4 196 9 S262 15 310 10 S380 4 420 9 S462 13 480 9 V18 H0 Z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;background:var(--bg)}
+.inv .corte::after{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 18' preserveAspectRatio='none'%3E%3Cpath d='M0 11 C30 6 52 13 88 10 S150 4 196 9 S262 15 310 10 S380 4 420 9 S462 13 480 9' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 18' preserveAspectRatio='none'%3E%3Cpath d='M0 11 C30 6 52 13 88 10 S150 4 196 9 S262 15 310 10 S380 4 420 9 S462 13 480 9' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");background:color-mix(in srgb,var(--ink) 35%,transparent)}
+.inv .corte.alt::before,.inv .corte.alt::after{transform:scaleX(-1)}
+/* El pase se pinta con el tono contrario para que resalte */
+.rsvp-pass.contraste{background:var(--bg);color:var(--ink);border:1px solid var(--accent);box-shadow:0 8px 20px rgba(34,9,14,.22);padding:12px 20px}
 .envelope{position:fixed;inset:0;z-index:30;background-color:var(--bg);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
   cursor:pointer;transition:opacity .7s,transform .7s;font-family:var(--f-body);border:0;width:100%;padding:24px}
 .envelope.gone{opacity:0;transform:translateY(-3%);pointer-events:none}
@@ -259,6 +287,49 @@ body.locked{overflow:hidden}
 .opening .seal{opacity:0}
 .opening .env-flap{transform:rotateX(180deg);z-index:0}
 .opening .env-letter{transform:translateY(-78px)}
+.dev-pal{max-width:480px;margin:0 auto;padding:18px 18px 110px;background:#1d1d1f;color:#f5f5f7;font-family:'Jost',system-ui,sans-serif;font-size:13px;text-align:left}
+.dev-seg{display:flex;gap:6px;margin:0 0 10px}.dev-seg button{flex:1;border:1px solid #48484a;background:#2c2c2e;color:#f5f5f7;border-radius:8px;padding:7px;font:inherit;cursor:pointer}.dev-seg button[aria-pressed="true"]{background:#f5f5f7;color:#1d1d1f}
+.dev-t{margin:0 0 10px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.75}
+.dev-chips{display:flex;flex-wrap:wrap;gap:8px}
+.dev-chip-w{display:inline-flex;align-items:center}
+.dev-chip{display:inline-flex;align-items:center;gap:8px;border:1px solid #48484a;background:#2c2c2e;color:#f5f5f7;border-radius:999px;padding:6px 12px 6px 6px;font:inherit;cursor:pointer}
+.dev-chip[aria-pressed="true"]{border-color:#f5f5f7;box-shadow:inset 0 0 0 1px #f5f5f7}
+.dev-chip i{display:flex}.dev-chip i span{width:14px;height:14px;border-radius:50%;margin-left:-4px;border:1.5px solid #2c2c2e}.dev-chip i span:first-child{margin-left:0}
+.dev-del{border:0;background:transparent;color:#aeaeb2;font-size:18px;line-height:1;padding:0 6px;cursor:pointer}
+.dev-add{margin-top:14px}
+.dev-add summary{cursor:pointer;font-weight:500}
+.dev-add p{margin:8px 0;opacity:.8;line-height:1.4}
+.dev-add code{font-size:12px}
+.dev-add textarea,.dev-add input{width:100%;background:#2c2c2e;border:1px solid #48484a;border-radius:8px;color:#f5f5f7;font:12px/1.4 ui-monospace,Menlo,monospace;padding:8px}
+.dev-row{display:flex;gap:8px;margin-top:8px}
+.dev-row input{font-family:'Jost',system-ui,sans-serif;font-size:13px;flex:1;min-width:0}
+.dev-row button{border:0;border-radius:8px;background:#f5f5f7;color:#1d1d1f;font:inherit;font-weight:500;padding:8px 12px;cursor:pointer;white-space:nowrap}
+.dev-err{color:#ff9f8a !important;opacity:1 !important}
+.dev-chip:focus-visible,.dev-del:focus-visible,.dev-row button:focus-visible{outline:2px solid #f5f5f7;outline-offset:2px}
+.song-card{display:grid;gap:10px}
+.song-embed{border-radius:12px;overflow:hidden}
+.song-embed iframe{display:block;width:100%;border:0}
+.song-embed.sc iframe{height:130px;border-radius:12px;background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.song-embed.sp iframe{height:80px;border-radius:12px}
+.song-credit{font-size:11.5px;opacity:.75}
+.song-credit a{color:inherit}
+.vinyl{display:block;overflow:visible}
+.vinyl .rec{fill:var(--ink)}
+.vinyl .groove{fill:none;stroke:color-mix(in srgb,var(--bg) 35%,transparent);stroke-width:1}
+.vinyl .lbl{fill:var(--accent)}
+.vinyl .hole{fill:var(--bg)}
+.vinyl .shine{fill:none;stroke:color-mix(in srgb,var(--bg) 55%,transparent);stroke-width:2;stroke-linecap:round}
+.vinyl-spin{transform-origin:50% 50%;transform-box:fill-box;animation:spin 3.2s linear infinite;animation-play-state:paused}
+.playing .vinyl-spin{animation-play-state:running}
+@keyframes spin{to{transform:rotate(360deg)}}
+.disc{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));right:14px;z-index:21;display:flex;align-items:center;gap:8px;flex-direction:row-reverse}
+.disc button{width:52px;height:52px;border-radius:50%;border:0;padding:0;background:transparent;cursor:pointer;filter:drop-shadow(0 6px 14px rgba(34,9,14,.3))}
+.disc button svg{width:52px;height:52px}
+.disc button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.disc .note{position:absolute;left:-4px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--btn-text);display:grid;place-items:center;font-size:11px;pointer-events:none}
+.disc-pill{background:var(--ink);color:var(--bg);font-size:11.5px;padding:7px 12px;border-radius:999px;max-width:min(240px,calc(100vw - 100px));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none;opacity:0;transform:translateX(8px);transition:opacity .35s,transform .35s;pointer-events:none}
+.disc-pill.show{opacity:1;transform:none;pointer-events:auto}
+@media (prefers-reduced-motion:reduce){.vinyl-spin{animation:none}.disc-pill{transition:none}}
 .quickbar{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;gap:6px;padding:6px;border-radius:999px;
   background:var(--ink);box-shadow:0 10px 28px rgba(34,9,14,.35);transform:translate(-50%,140%);opacity:0;transition:transform .45s cubic-bezier(.3,.7,.3,1),opacity .3s;
   max-width:calc(100% - 32px);font-family:var(--f-body)}
@@ -289,7 +360,7 @@ body.locked{overflow:hidden}
 
 <div id="root">
   <main class="inv" id="inv">
-    <section class="cover">
+    <section class="cover" data-tono="oscuro">
       <div class="petals" id="petals"></div>
       <div class="corner tl deco" data-ill="rosa"></div>
       <div class="corner br deco" data-ill="rosa"></div>
@@ -300,13 +371,13 @@ body.locked{overflow:hidden}
       <p class="hint">Desliza<i></i></p>
     </section>
 
-    <section class="personal" id="personal" hidden>
+    <section class="personal" id="personal" data-tono="claro" hidden>
       <div class="divider deco" data-ill="ramita"></div>
       <p class="who" data-bind="invitacion"></p>
       <p class="seats">Con mucha alegría queremos compartir este día contigo.</p>
     </section>
 
-    <section data-sec="cuenta">
+    <section data-sec="cuenta" data-tono="claro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">Falta poquito</p>
       <h2>Cuenta regresiva</h2>
@@ -323,14 +394,14 @@ body.locked{overflow:hidden}
       </div>
     </section>
 
-    <section data-sec="historia">
+    <section data-sec="historia" data-tono="oscuro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">Así empezó todo</p>
       <h2>Nuestra historia</h2>
       <ol class="story" id="story"></ol>
     </section>
 
-    <section data-sec="fotos">
+    <section data-sec="fotos" data-tono="oscuro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">Nuestros momentos</p>
       <h2>Tú y yo</h2>
@@ -338,14 +409,24 @@ body.locked{overflow:hidden}
       <p class="swipe">Desliza para ver más →</p>
     </section>
 
-    <section data-sec="itinerario">
+    <section data-sec="cancion" id="cancion" data-tono="oscuro">
+      <div class="divider deco" data-ill="ramita"></div>
+      <p class="script eyebrow">La que nos acompaña</p>
+      <h2>Nuestra canción</h2>
+      <div class="song-card" id="songCard">
+        <div class="song-embed" id="songEmbed"></div>
+        <p class="song-credit"><span data-bind="cancionNota"></span>Toca el disco de arriba para escucharla mientras recorres la invitación. <a id="songLink" href="#" target="_blank" rel="noopener"></a></p>
+      </div>
+    </section>
+
+    <section data-sec="itinerario" data-tono="claro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">El gran día</p>
       <h2>Itinerario</h2>
       <ul class="timeline" id="timeline"></ul>
     </section>
 
-    <section data-sec="lugar" id="ubicacion">
+    <section data-sec="lugar" id="ubicacion" data-tono="claro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">Dónde</p>
       <h2>Ceremonia y recepción</h2>
@@ -358,7 +439,7 @@ body.locked{overflow:hidden}
       </article>
     </section>
 
-    <section data-sec="vestimenta" class="dress">
+    <section data-sec="vestimenta" class="dress" data-tono="oscuro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">Qué ponerse</p>
       <h2>Código de vestimenta</h2>
@@ -373,7 +454,7 @@ body.locked{overflow:hidden}
       </div>
     </section>
 
-    <section data-sec="regalos" class="gift">
+    <section data-sec="regalos" class="gift" data-tono="oscuro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">Con cariño</p>
       <h2>Regalos</h2>
@@ -383,7 +464,7 @@ body.locked{overflow:hidden}
       <div class="bank" id="bank" hidden></div>
     </section>
 
-    <section class="rsvp" id="rsvp">
+    <section class="rsvp" id="rsvp" data-tono="claro">
       <div class="divider deco" data-ill="ramita"></div>
       <p class="script eyebrow">¿Nos acompañas?</p>
       <h2>Confirma tu asistencia</h2>
@@ -406,12 +487,17 @@ body.locked{overflow:hidden}
       <div class="status" id="status" hidden></div>
     </section>
 
-    <footer class="foot">
+    <footer class="foot" data-tono="oscuro">
       <div data-ill="auto"></div>
       <p class="script" data-bind="ambos"></p>
       <p class="tag" data-bind="hashtag"></p>
     </footer>
   </main>
+
+  <div class="disc" id="disc" hidden>
+    <button type="button" id="discBtn" aria-pressed="false" aria-label="Reproducir nuestra canción"><svg class="vinyl" viewBox="0 0 64 64" aria-hidden="true"><g class="vinyl-spin"><circle class="rec" cx="32" cy="32" r="31"/><circle class="groove" cx="32" cy="32" r="26"/><circle class="groove" cx="32" cy="32" r="21.5"/><circle class="groove" cx="32" cy="32" r="17"/><circle class="lbl" cx="32" cy="32" r="11"/><circle class="hole" cx="32" cy="32" r="2.2"/><path class="shine" d="M14 20 A22 22 0 0 1 24 11"/></g></svg><span class="note" aria-hidden="true">♪</span></button>
+    <a class="disc-pill" id="discPill" href="#" target="_blank" rel="noopener"></a>
+  </div>
 
   <nav class="quickbar" id="quickbar" aria-label="Accesos rápidos">
     <a class="qb main" id="qbRsvp" href="#rsvp" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12v8H2z M2 4l6 5 6-5"/></svg><span id="qbRsvpTxt">Confirmar asistencia</span></a>
@@ -440,6 +526,13 @@ const FOTOS = {};
 <script>
 (function(){
   const $ = s => document.querySelector(s), $$ = s => Array.from(document.querySelectorAll(s));
+
+  /* La invitación siempre abre desde el principio, aunque se recargue o se vuelva a ella */
+  if('scrollRestoration' in history) history.scrollRestoration='manual';
+  if(location.hash) history.replaceState(null,'',location.pathname+location.search);
+  const alInicio=()=>window.scrollTo(0,0);
+  alInicio();
+  addEventListener('pageshow',e=>{ if(e.persisted) alInicio(); });
   const root = $("#root");
 
   /* ---------- Ilustraciones originales ---------- */
@@ -488,6 +581,7 @@ const FOTOS = {};
     marfil:{bg:"#F8F0DC",ink:"#3B1219",accent:"#8C3438",soft:"#EFD3CB",leaf:"#5F6A33",card:"#FCF7EB",btn:"#F8F0DC"},
     rosa:{bg:"#F2D5CD",ink:"#3B1219",accent:"#8C3438",soft:"#F8E9DA",leaf:"#5F6A33",card:"#F9E7E1",btn:"#F8F0DC"},
     vino:{bg:"#3B1219",ink:"#F3E6BE",accent:"#E8BFB7",soft:"#4C1B23",leaf:"#AAB36C",card:"#47171F",btn:"#3B1219"},
+    noche:{bg:"#3B1219",ink:"#FDFDF8",accent:"#E9C8C3",soft:"#5A541E",leaf:"#9FA91F",card:"#47171F",btn:"#3B1219"},
     jardin:{bg:"#F3EBD2",ink:"#3B1219",accent:"#5F6A33",soft:"#E4E2C6",leaf:"#5F6A33",card:"#FAF4E4",btn:"#F8F0DC"}
   };
   const NOMBRES={
@@ -502,20 +596,63 @@ const FOTOS = {};
     pinyon:{g:"Pinyon+Script",fam:"'Pinyon Script', cursive",size:"32px"},
     vibes:{g:"Great+Vibes",fam:"'Great Vibes', cursive",size:"34px"}
   };
-  const pal=PALETAS[CONFIG.paleta]||PALETAS.marfil, fn=NOMBRES[CONFIG.letraNombres]||NOMBRES.cormorant, fm=MANO[CONFIG.letraMano]||MANO.caveat;
+  /* Modo pruebas: solo al abrir la invitación como archivo local o en localhost, nunca en la página publicada */
+  const modoPruebas = location.protocol==="file:" || ["localhost","127.0.0.1"].includes(location.hostname);
+  const LS_PAL="pruebas:paletas", LS_ACT="pruebas:paleta";
+  const leerLS=(k,def)=>{ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(_){ return def; } };
+  const guardarLS=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(_){} };
+  if(modoPruebas) Object.assign(PALETAS, leerLS(LS_PAL,{}));
+  const paletaActiva = (modoPruebas && PALETAS[leerLS(LS_ACT,"")]) ? leerLS(LS_ACT,"") : CONFIG.paleta;
+  const pal=PALETAS[paletaActiva]||PALETAS.marfil, fn=NOMBRES[CONFIG.letraNombres]||NOMBRES.cormorant, fm=MANO[CONFIG.letraMano]||MANO.caveat;
   const link=document.createElement('link'); link.rel='stylesheet';
   link.href=`https://fonts.googleapis.com/css2?family=${fn.g}&family=${fm.g}&family=Jost:wght@300;400;500&display=swap`;
   document.head.appendChild(link);
   const st=document.documentElement.style;
-  Object.entries({bg:pal.bg,ink:pal.ink,accent:pal.accent,soft:pal.soft,leaf:pal.leaf,card:pal.card,'btn-text':pal.btn,
+  function aplicarPaleta(p){
+    Object.entries({bg:p.bg,ink:p.ink,accent:p.accent,soft:p.soft,leaf:p.leaf,card:p.card,'btn-text':p.btn}).forEach(([k,v])=>st.setProperty('--'+k,v));
+    document.body.style.background=p.bg;
+  }
+  aplicarPaleta(pal);
+  /* El sobre de entrada siempre usa la paleta marfil, sin importar la paleta de la invitación */
+  const sobreEl=document.getElementById('envelope'), M=PALETAS.marfil;
+  if(sobreEl) Object.entries({bg:M.bg,ink:M.ink,accent:M.accent,soft:M.soft,card:M.card,'btn-text':M.btn}).forEach(([k,v])=>sobreEl.style.setProperty('--'+k,v));
+  Object.entries({
     'f-display':fn.fam,'display-style':fn.style,'display-weight':fn.weight,'display-size':fn.size,'display-transform':fn.tt,'display-ls':fn.ls,
     'f-script':fm.fam,'script-size':fm.size}).forEach(([k,v])=>st.setProperty('--'+k,v));
   st.setProperty('--stroke',`var(--${CONFIG.colorTrazo||'ink'})`);
-  document.body.style.background=pal.bg;
+
+  /* ---------- Cortes claro / oscuro ---------- */
+  const LS_CORTES="pruebas:cortes";
+  let cortes = CONFIG.cortes ? Object.assign({}, CONFIG.cortes, modoPruebas ? leerLS(LS_CORTES,{}) : {}) : null;
+  ["claro","oscuro"].forEach(t=>{ if(cortes && !PALETAS[cortes[t]]) cortes[t]=CONFIG.cortes[t]; });
+  function varsDe(el,p){
+    Object.entries({bg:p.bg,ink:p.ink,accent:p.accent,soft:p.soft,leaf:p.leaf,card:p.card,'btn-text':p.btn}).forEach(([k,v])=>el.style.setProperty('--'+k,v));
+    el.style.setProperty('--stroke',`var(--${CONFIG.colorTrazo||'ink'})`);
+  }
+  /* Marca dónde empieza cada franja (solo secciones visibles) para dibujar la onda */
+  function marcarCortes(){
+    let prev=null, n=0;
+    $$("#inv > [data-tono]").forEach(el=>{
+      el.classList.remove('corte','alt');
+      if(el.hidden) return;
+      if(cortes && prev && el.dataset.tono!==prev){ el.classList.add('corte'); if(n++%2) el.classList.add('alt'); }
+      prev=el.dataset.tono;
+    });
+  }
+  function aplicarCortes(){
+    root.classList.toggle('cortes',!!cortes);
+    if(!cortes) return;
+    $$("#inv > [data-tono]").forEach(el=>varsDe(el,PALETAS[cortes[el.dataset.tono]]));
+    const pase=$("#rsvpPass"); if(pase){ pase.classList.add('contraste'); varsDe(pase,PALETAS[cortes[pase.closest('[data-tono]').dataset.tono==='claro'?'oscuro':'claro']]); }
+    document.body.style.background=PALETAS[cortes.oscuro].bg;
+    marcarCortes(); tonoBarra&&tonoBarra();
+  }
+  let tonoBarra=null;
   root.classList.toggle('paper',CONFIG.texturaPapel);
   root.classList.toggle('few',!CONFIG.muchosAdornos);
   root.classList.toggle('draw-on',CONFIG.trazoAnimado);
   $$("[data-sec]").forEach(el=>{ el.hidden = CONFIG.secciones[el.dataset.sec]===false; });
+  aplicarCortes();
 
   /* ---------- Contenido ---------- */
   $("#story").innerHTML=CONFIG.historia.map(h=>`<li><div data-ill="${h.dibujo}"></div><div><span class="yr">${h.anio}</span><h3>${h.titulo}</h3><p>${h.texto}</p></div></li>`).join("");
@@ -594,14 +731,127 @@ const FOTOS = {};
 
   $("#bankBtn").addEventListener('click',()=>{ const b=$("#bank"); b.hidden=!b.hidden; $("#bankBtn").textContent=b.hidden?"Ver datos para transferencia":"Ocultar datos"; });
 
+  /* ---------- Selector de paletas (solo modo pruebas) ---------- */
+  if(modoPruebas){
+    const box=document.createElement('div'); box.className='dev-pal'; box.setAttribute('role','region'); box.setAttribute('aria-label','Selector de paletas (solo en pruebas)');
+    box.innerHTML=`<p class="dev-t">Paletas · solo en pruebas</p>${cortes?`<div class="dev-seg" id="devSeg" role="group" aria-label="Franja a cambiar"><button type="button" data-t="claro" aria-pressed="true">Franjas claras</button><button type="button" data-t="oscuro" aria-pressed="false">Franjas oscuras</button></div>`:""}<div class="dev-chips" id="devChips"></div>
+      <details class="dev-add"><summary>Agregar paleta</summary>
+        <p>Pega aquí lo que copiaste del editor de colores, por ejemplo <code>miPaleta: { bg: "#…", … }</code>.</p>
+        <textarea id="devTxt" rows="3" spellcheck="false"></textarea>
+        <div class="dev-row"><input id="devName" placeholder="Nombre (opcional)" maxlength="24"><button type="button" id="devAddBtn">Agregar y usar</button></div>
+        <p class="dev-err" id="devErr" hidden></p>
+      </details>`;
+    $("footer.foot").after(box);
+    const propias=()=>leerLS(LS_PAL,{});
+    let activa=paletaActiva;
+    let franja="claro";
+    const elegida=()=>cortes?cortes[franja]:activa, porDefecto=()=>cortes?CONFIG.cortes[franja]:CONFIG.paleta;
+    function pintar(){
+      $("#devChips").innerHTML=Object.entries(PALETAS).map(([k,p])=>`<span class="dev-chip-w"><button type="button" class="dev-chip" data-k="${k}" aria-pressed="${k===elegida()}"><i>${["bg","ink","accent","soft","leaf"].map(t=>`<span style="background:${p[t]}"></span>`).join("")}</i>${k}${k===porDefecto()?" ★":""}</button>${propias()[k]?`<button type="button" class="dev-del" data-del="${k}" aria-label="Borrar ${k}">×</button>`:""}</span>`).join("");
+      $$("#devSeg button").forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===franja));
+    }
+    function usar(k){
+      if(cortes){ cortes[franja]=k; guardarLS(LS_CORTES,{claro:cortes.claro,oscuro:cortes.oscuro}); aplicarCortes(); }
+      else { activa=k; aplicarPaleta(PALETAS[k]); guardarLS(LS_ACT,k); }
+      pintar();
+    }
+    if(cortes) $("#devSeg").addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ franja=b.dataset.t; pintar(); } });
+    $("#devChips").addEventListener('click',e=>{
+      const d=e.target.closest('[data-del]');
+      if(d){ const k=d.dataset.del, mias=propias(); delete mias[k]; delete PALETAS[k]; guardarLS(LS_PAL,mias); if(elegida()===k) usar(porDefecto()); else pintar(); return; }
+      const b=e.target.closest('.dev-chip'); if(b) usar(b.dataset.k);
+    });
+    $("#devAddBtn").addEventListener('click',()=>{
+      const txt=$("#devTxt").value, err=$("#devErr"); err.hidden=true;
+      const nombreTxt=(txt.match(/^\s*([A-Za-z0-9_áéíóúñ-]+)\s*:/)||[])[1];
+      const p={}; ["bg","ink","accent","soft","leaf","card","btn"].forEach(t=>{ const m=txt.match(new RegExp(t+'\\s*:\\s*"(#[0-9a-fA-F]{6})"')); if(m) p[t]=m[1].toUpperCase(); });
+      const faltan=["bg","ink","accent","soft","leaf","card","btn"].filter(t=>!p[t]);
+      if(faltan.length){ err.textContent="Faltan colores: "+faltan.join(", ")+". Copia la paleta completa desde el editor."; err.hidden=false; return; }
+      let nombre=($("#devName").value.trim()||nombreTxt||"mi paleta").replace(/\s+/g,"-");
+      while(PALETAS[nombre] && !propias()[nombre]) nombre+="-2";
+      const mias=propias(); mias[nombre]=p; guardarLS(LS_PAL,mias); PALETAS[nombre]=p;
+      $("#devTxt").value=""; $("#devName").value=""; usar(nombre);
+    });
+    pintar();
+  }
+  /* ---------- Nuestra canción (Spotify o SoundCloud) ---------- */
+  const prov=(CONFIG.cancion||{}).proveedor||"";
+  const CS=((CONFIG.cancion||{})[prov])||{}, disc=$("#disc"), discBtn=$("#discBtn"), pill=$("#discPill");
+  const hayCancion=!!CS.url && CONFIG.secciones.cancion!==false;
+  const nombrePlat=prov==="spotify"?"Spotify":"SoundCloud";
+  let quierePlay=false, sonando=false, pillTimer=null, avisoTimer=null;
+  let reproductor={listo:false, play(){}, pause(){}};
+  function mostrarPill(texto,ms){ pill.textContent=texto; pill.classList.add('show'); clearTimeout(pillTimer); if(ms) pillTimer=setTimeout(()=>pill.classList.remove('show'),ms); }
+  function estadoDisco(on){
+    if(on && !sonando){ clearTimeout(avisoTimer); mostrarPill("♪ "+(CS.titulo||"")+" · "+(CS.artista||"")+" · "+nombrePlat,4500); }
+    sonando=on; disc.classList.toggle('playing',on);
+    discBtn.setAttribute('aria-pressed',on); discBtn.setAttribute('aria-label',on?"Pausar nuestra canción":"Reproducir nuestra canción");
+  }
+  function listo(){ reproductor.listo=true; if(quierePlay) reproductor.play(); }
+  function cargarScript(src,onload){ const sc=document.createElement('script'); sc.src=src; if(onload) sc.onload=onload; document.head.appendChild(sc); }
+
+  function iniciarSoundCloud(){
+    const iframe=document.createElement('iframe');
+    iframe.title="Reproductor de SoundCloud"; iframe.allow="autoplay";
+    iframe.src="https://w.soundcloud.com/player/?url="+encodeURIComponent(CS.url)+
+      "&color=%23"+(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().replace('#','')||"8c3438")+
+      "&auto_play=false&visual=false&show_artwork=false&show_user=true&show_comments=false&show_playcount=false&show_reposts=false&show_teaser=false&hide_related=true&buying=false&sharing=false&download=false";
+    $("#songEmbed").classList.add("sc"); $("#songEmbed").appendChild(iframe);
+    cargarScript("https://w.soundcloud.com/player/api.js",()=>{
+      const w=SC.Widget(iframe);
+      reproductor.play=()=>w.play(); reproductor.pause=()=>w.pause();
+      w.bind(SC.Widget.Events.READY,listo);
+      w.bind(SC.Widget.Events.PLAY,()=>{
+        if(!sonando){ let v=0; w.setVolume(0); const t=setInterval(()=>{ v+=10; w.setVolume(Math.min(v,100)); if(v>=100) clearInterval(t); },120); }
+        estadoDisco(true);
+      });
+      w.bind(SC.Widget.Events.PAUSE,()=>estadoDisco(false));
+      w.bind(SC.Widget.Events.FINISH,()=>{ w.seekTo(0); w.play(); });
+    });
+  }
+
+  function iniciarSpotify(){
+    const id=(CS.url.match(/track\/([A-Za-z0-9]+)/)||[])[1];
+    const cont=document.createElement('div'); $("#songEmbed").classList.add("sp"); $("#songEmbed").appendChild(cont);
+    window.onSpotifyIframeApiReady=(IFrameAPI)=>{
+      IFrameAPI.createController(cont,{uri:"spotify:track:"+id,width:"100%",height:80},(ctrl)=>{
+        reproductor.play=()=>ctrl.resume(); reproductor.pause=()=>ctrl.pause();
+        ctrl.addListener('ready',listo);
+        ctrl.addListener('playback_update',e=>{
+          const d=e.data||{}; if(d.isBuffering) return;
+          estadoDisco(!d.isPaused);
+          if(d.isPaused && d.duration && d.position>=d.duration-500) ctrl.restart();
+        });
+      });
+    };
+    cargarScript("https://open.spotify.com/embed/iframe-api/v1");
+  }
+
+  if(!hayCancion){ $("#cancion").hidden=true; }
+  else{
+    bind({cancionNota:CS.nota?CS.nota+". ":""});
+    $("#songLink").href=pill.href=CS.url; $("#songLink").textContent="Ver en "+nombrePlat;
+    prov==="spotify" ? iniciarSpotify() : iniciarSoundCloud();
+    discBtn.addEventListener('click',()=>{
+      if(sonando){ reproductor.pause(); return; }
+      quierePlay=true;
+      if(reproductor.listo) reproductor.play();
+      clearTimeout(avisoTimer);
+      avisoTimer=setTimeout(()=>{ if(!sonando) mostrarPill("Toca ▶ en «Nuestra canción» para empezar",5000); },2200);
+    });
+    document.addEventListener('visibilitychange',()=>{ if(document.hidden && sonando) reproductor.pause(); });
+  }
+  function mostrarDisco(){ if(hayCancion) disc.hidden=false; }
+
   /* ---------- Sobre ---------- */
   const env=$("#envelope");
   if(CONFIG.sobreDeEntrada){ env.hidden=false; document.body.classList.add('locked'); }
+  else mostrarDisco();
   env.addEventListener('click',()=>{
     if(env.disabled) return;
     env.classList.add('opening');
     setTimeout(()=>env.classList.add('gone'),1300);
-    setTimeout(()=>{ env.hidden=true; document.body.classList.remove('locked'); replay($("#coverIll .ill")); const sv=$("#coverIll svg.mia"); if(sv) sv.replaceWith(sv.cloneNode(true)); $$(".corner .ill").forEach(replay); },1900);
+    setTimeout(()=>{ env.hidden=true; document.body.classList.remove('locked'); mostrarDisco(); replay($("#coverIll .ill")); const sv=$("#coverIll svg.mia"); if(sv) sv.replaceWith(sv.cloneNode(true)); $$(".corner .ill").forEach(replay); },1900);
   });
 
   /* ---------- Invitado y confirmación ---------- */
@@ -622,6 +872,14 @@ const FOTOS = {};
   /* ---------- Barra de accesos rápidos ---------- */
   const bar=$("#quickbar"), qbRsvp=$("#qbRsvp"), qbMap=$("#qbMap");
   let pasoPortada=false, veRsvp=false, veLugar=false;
+  /* La barra toma los colores de la franja que tiene detrás, así siempre contrasta */
+  tonoBarra=()=>{
+    if(!cortes) return;
+    const y=innerHeight-40; let t=null;
+    $$("#inv > [data-tono]").forEach(el=>{ if(el.hidden) return; const r=el.getBoundingClientRect(); if(r.top<=y && r.bottom>y) t=el.dataset.tono; });
+    if(t && bar.dataset.tono!==t){ bar.dataset.tono=t; varsDe(bar,PALETAS[cortes[t]]); }
+  };
+  addEventListener('scroll',tonoBarra,{passive:true}); tonoBarra();
   function updateBar(){
     const resp=invitado&&invitado.respuesta;
     qbRsvp.hidden = !invitado || veRsvp || resp==='No asistirá';
@@ -696,7 +954,7 @@ const FOTOS = {};
     invitado=r;
     if(envTo.textContent!=="Para "+r.invitacion) nombreSobre("Para "+r.invitacion);
     bind({invitacion:r.invitacion,pases:r.pases});
-    $("#personal").hidden=false;
+    $("#personal").hidden=false; marcarCortes();
     if(r.respuesta==='Asistirá'||r.respuesta==='No asistirá') mostrarEstado(); else mostrarForm();
   }
   const claveCache="invitado:"+codigo;
