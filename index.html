@@ -278,7 +278,9 @@ body.locked{overflow:hidden}
 .opening .env-letter{transform:translateY(-78px)}
 .song-card{display:grid;gap:10px}
 .song-embed{border-radius:12px;overflow:hidden}
-.song-card iframe{width:100%;height:130px;border:0;border-radius:12px;display:block;background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.song-embed iframe{display:block;width:100%;border:0}
+.song-embed.sc iframe{height:130px;border-radius:12px;background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.song-embed.sp iframe{height:80px;border-radius:12px}
 .song-credit{font-size:11.5px;opacity:.75}
 .song-credit a{color:inherit}
 .vinyl{display:block;overflow:visible}
@@ -670,7 +672,7 @@ const FOTOS = {};
     iframe.src="https://w.soundcloud.com/player/?url="+encodeURIComponent(CS.url)+
       "&color=%23"+(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().replace('#','')||"8c3438")+
       "&auto_play=false&visual=false&show_artwork=false&show_user=true&show_comments=false&show_playcount=false&show_reposts=false&show_teaser=false&hide_related=true&buying=false&sharing=false&download=false";
-    $("#songEmbed").appendChild(iframe);
+    $("#songEmbed").classList.add("sc"); $("#songEmbed").appendChild(iframe);
     cargarScript("https://w.soundcloud.com/player/api.js",()=>{
       const w=SC.Widget(iframe);
       reproductor.play=()=>w.play(); reproductor.pause=()=>w.pause();
@@ -686,7 +688,7 @@ const FOTOS = {};
 
   function iniciarSpotify(){
     const id=(CS.url.match(/track\/([A-Za-z0-9]+)/)||[])[1];
-    const cont=document.createElement('div'); $("#songEmbed").appendChild(cont);
+    const cont=document.createElement('div'); $("#songEmbed").classList.add("sp"); $("#songEmbed").appendChild(cont);
     window.onSpotifyIframeApiReady=(IFrameAPI)=>{
       IFrameAPI.createController(cont,{uri:"spotify:track:"+id,width:"100%",height:80},(ctrl)=>{
         reproductor.play=()=>ctrl.resume(); reproductor.pause=()=>ctrl.pause();
